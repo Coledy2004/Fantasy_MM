@@ -12,39 +12,39 @@ export default function LeagueStandingsTable({ teams, onTeamClick }) {
         <table className="w-full">
           <thead>
             <tr className="border-b-2 border-mm-border bg-mm-light">
-              <th className="px-6 py-4 text-left text-sm font-bold text-mm-navy">RANK</th>
-              <th className="px-6 py-4 text-left text-sm font-bold text-mm-navy">TEAM</th>
-              <th className="px-6 py-4 text-left text-sm font-bold text-mm-navy">OWNER</th>
-              <th className="px-6 py-4 text-center text-sm font-bold text-mm-navy">PLAYERS</th>
-              <th className="px-6 py-4 text-right text-sm font-bold text-mm-navy">POINTS</th>
-              <th className="px-6 py-4 text-center text-sm font-bold text-mm-navy">TREND</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-mm-text">RANK</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-mm-text">TEAM</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-mm-text">OWNER</th>
+              <th className="px-6 py-4 text-center text-sm font-bold text-mm-text">PLAYERS</th>
+              <th className="px-6 py-4 text-right text-sm font-bold text-mm-text">POINTS</th>
+              <th className="px-6 py-4 text-center text-sm font-bold text-mm-text">TREND</th>
             </tr>
           </thead>
           <tbody>
             {teams.map((team, idx) => (
               <tr
                 key={team.id}
-                className="border-b border-mm-light hover:bg-mm-light transition-colors cursor-pointer"
+                className="border-b border-mm-border hover:bg-mm-light transition-colors cursor-pointer"
                 onClick={() => onTeamClick && onTeamClick(team)}
               >
                 <td className="px-6 py-4">
                   <span className="mm-rank-badge">{idx + 1}</span>
                 </td>
                 <td className="px-6 py-4">
-                  <p className="font-bold text-mm-navy text-base">{team.teamName}</p>
-                  <p className="text-xs text-gray-500">{team.playerCount} players</p>
+                  <p className="font-bold text-white text-base">{team.teamName}</p>
+                  <p className="text-xs text-mm-text">{team.playerCount} players</p>
                 </td>
                 <td className="px-6 py-4">
-                  <p className="text-sm text-gray-700">{team.owner}</p>
+                  <p className="text-sm text-mm-text">{team.owner}</p>
                 </td>
                 <td className="px-6 py-4 text-center">
-                  <span className="bg-mm-sky bg-opacity-20 text-mm-navy px-3 py-1 rounded-full text-sm font-semibold">
+                  <span className="bg-mm-sky bg-opacity-20 text-mm-sky px-3 py-1 rounded-full text-sm font-semibold">
                     {team.activePlayerCount}/{team.playerCount}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <p className="text-2xl font-bold text-mm-blue">{team.totalPoints}</p>
-                  <p className="text-xs text-gray-500 mt-1">{team.pointsPerGame.toFixed(2)} avg</p>
+                  <p className="text-2xl font-bold text-mm-sky">{team.totalPoints}</p>
+                  <p className="text-xs text-mm-text mt-1">{team.pointsPerGame.toFixed(2)} avg</p>
                 </td>
                 <td className="px-6 py-4 text-center">
                   {team.trend > 0 ? (

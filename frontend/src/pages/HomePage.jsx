@@ -194,11 +194,11 @@ export default function HomePage() {
   const averagePointsPerPlayer = mockMyTeam.totalPoints / mockMyTeam.players.length;
 
   return (
-    <div className="min-h-screen bg-mm-light py-8">
+    <div className="min-h-screen bg-mm-dark py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12">
           <h1 className="mm-heading-1 mb-2">Welcome Back!</h1>
-          <p className="text-gray-600 text-lg">Here's your fantasy March Madness dashboard</p>
+          <p className="text-mm-text text-lg">Here's your fantasy March Madness dashboard</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -251,28 +251,28 @@ export default function HomePage() {
             <div className="mm-card p-6 mb-6">
               <h3 className="mm-heading-3 mb-4">Your Team Stats</h3>
               <div className="space-y-4">
-                <div className="pb-4 border-b border-mm-light">
-                  <p className="text-xs text-gray-500 font-semibold mb-1">TOTAL POINTS</p>
-                  <p className="text-3xl font-bold text-mm-blue">{mockMyTeam.totalPoints}</p>
+                <div className="pb-4 border-b border-mm-border">
+                  <p className="text-xs text-mm-text font-semibold mb-1">TOTAL POINTS</p>
+                  <p className="text-3xl font-bold text-mm-sky">{mockMyTeam.totalPoints}</p>
                 </div>
-                <div className="pb-4 border-b border-mm-light">
-                  <p className="text-xs text-gray-500 font-semibold mb-1">ACTIVE PLAYERS</p>
+                <div className="pb-4 border-b border-mm-border">
+                  <p className="text-xs text-mm-text font-semibold mb-1">ACTIVE PLAYERS</p>
                   <p className="text-2xl font-bold text-mm-success">{activePlayers}/10</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">SEED DISTRIBUTION</p>
+                  <p className="text-xs text-mm-text font-semibold mb-1">SEED DISTRIBUTION</p>
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm text-mm-text">
                       <span>Seeds 1-6</span>
-                      <span className="font-bold text-mm-blue">7</span>
+                      <span className="font-bold text-mm-sky">7</span>
                     </div>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm text-mm-text">
                       <span>Seeds 7-10</span>
-                      <span className="font-bold text-mm-blue">2</span>
+                      <span className="font-bold text-mm-sky">2</span>
                     </div>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm text-mm-text">
                       <span>Seeds 11-16</span>
-                      <span className="font-bold text-mm-blue">1</span>
+                      <span className="font-bold text-mm-sky">1</span>
                     </div>
                   </div>
                 </div>
@@ -283,15 +283,15 @@ export default function HomePage() {
               <h3 className="mm-heading-3 mb-4">League Info</h3>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold">LEAGUE</p>
-                  <p className="text-lg font-bold text-mm-navy">2026 Elite Eight</p>
+                  <p className="text-xs text-mm-text font-semibold">LEAGUE</p>
+                  <p className="text-lg font-bold text-white">2026 Elite Eight</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold">MEMBERS</p>
-                  <p className="text-lg font-bold text-mm-navy">4 Teams</p>
+                  <p className="text-xs text-mm-text font-semibold">MEMBERS</p>
+                  <p className="text-lg font-bold text-white">4 Teams</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold">YOUR RANK</p>
+                  <p className="text-xs text-mm-text font-semibold">YOUR RANK</p>
                   <p className="text-2xl font-bold text-mm-gold">1st Place 🥇</p>
                 </div>
               </div>
