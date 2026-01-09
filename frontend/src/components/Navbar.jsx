@@ -7,7 +7,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-12 h-12 bg-mm-gold rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
               <span className="text-mm-navy font-bold text-2xl">MM</span>
             </div>
             <div className="text-white hidden sm:block">

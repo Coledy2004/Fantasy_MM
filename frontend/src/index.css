@@ -51,7 +51,7 @@ body {
 }
 
 .mm-stat-box {
-  @apply bg-gradient-to-br from-mm-light to-mm-sky rounded-lg p-6 text-center;
+  @apply bg-mm-navy rounded-lg p-6 text-center;
 }
 
 .mm-player-card {
