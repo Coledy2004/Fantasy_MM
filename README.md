@@ -22,3 +22,7 @@ If a NCAA team gets eliminated, that player gets points from their elimination g
 For each NCAA players final score, add up the players total points from all their played games.
 For each teams total score, add up all players points on that team.
 
+For NCAA players playing in first four matchups, points are added if that players NCAA team loses in their first four matchup. 
+If an NCAA players team wins their first four matchup, the player does not get awarded points from that matchup, but will get points for all games played after their first four win.
+
+
