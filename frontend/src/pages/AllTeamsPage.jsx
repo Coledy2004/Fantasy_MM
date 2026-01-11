@@ -1,109 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const mockAllTeams = [
-  {
-    id: 1,
-    teamName: 'Bracket Busters',
-    owner: 'Cole D',
-    totalPoints: 245,
-    playerCount: 10,
-    activePlayerCount: 6,
-    pointsPerGame: 23.4,
-    trend: 2,
-    lastUpdated: '2 hours ago',
-    seedDistribution: { '1-6': 7, '7-10': 2, '11-16': 1 },
-    players: [
-      { name: 'LeBron James', team: 'Duke', seed: 1, points: 45, status: 'active' },
-      { name: 'Paolo Banchero', team: 'Kansas', seed: 1, points: 38, status: 'active' },
-      { name: 'Cole Anthony', team: 'UNC', seed: 2, points: 32, status: 'active' },
-      { name: 'Scottie Barnes', team: 'Arizona', seed: 2, points: 28, status: 'eliminated' },
-      { name: 'Tyrese Maxey', team: 'Kentucky', seed: 2, points: 35, status: 'active' },
-      { name: 'Devin Vassell', team: 'Texas Tech', seed: 3, points: 25, status: 'eliminated' },
-      { name: 'Immanuel Quickley', team: 'Kentucky', seed: 2, points: 42, status: 'active' },
-      { name: 'Tyus Washington Jr', team: 'Oregon State', seed: 8, points: 18, status: 'eliminated' },
-      { name: 'MJ Walker', team: 'FSU', seed: 4, points: 22, status: 'eliminated' },
-      { name: 'AJ Dillon', team: 'Boston College', seed: 12, points: 8, status: 'eliminated' },
-    ],
-  },
-  {
-    id: 2,
-    teamName: 'Cinderella Dreams',
-    owner: 'Sarah M',
-    totalPoints: 238,
-    playerCount: 10,
-    activePlayerCount: 7,
-    pointsPerGame: 22.8,
-    trend: -1,
-    lastUpdated: '1 hour ago',
-    seedDistribution: { '1-6': 7, '7-10': 2, '11-16': 1 },
-    players: [
-      { name: 'Player 1', team: 'Duke', seed: 1, points: 40, status: 'active' },
-      { name: 'Player 2', team: 'Kansas', seed: 1, points: 35, status: 'active' },
-      { name: 'Player 3', team: 'UNC', seed: 2, points: 30, status: 'active' },
-      { name: 'Player 4', team: 'Arizona', seed: 2, points: 28, status: 'active' },
-      { name: 'Player 5', team: 'Kentucky', seed: 2, points: 38, status: 'active' },
-      { name: 'Player 6', team: 'Texas Tech', seed: 3, points: 22, status: 'active' },
-      { name: 'Player 7', team: 'Gonzaga', seed: 1, points: 25, status: 'active' },
-      { name: 'Player 8', team: 'Purdue', seed: 3, points: 18, status: 'eliminated' },
-      { name: 'Player 9', team: 'Houston', seed: 3, points: 20, status: 'eliminated' },
-      { name: 'Player 10', team: 'Marquette', seed: 6, points: 15, status: 'eliminated' },
-    ],
-  },
-  {
-    id: 3,
-    teamName: 'Final Four Picks',
-    owner: 'Mike J',
-    totalPoints: 221,
-    playerCount: 10,
-    activePlayerCount: 5,
-    pointsPerGame: 21.1,
-    trend: 0,
-    lastUpdated: '45 minutes ago',
-    seedDistribution: { '1-6': 7, '7-10': 2, '11-16': 1 },
-    players: [
-      { name: 'Player A', team: 'Duke', seed: 1, points: 38, status: 'active' },
-      { name: 'Player B', team: 'Kansas', seed: 1, points: 33, status: 'active' },
-      { name: 'Player C', team: 'UNC', seed: 2, points: 28, status: 'active' },
-      { name: 'Player D', team: 'Arizona', seed: 2, points: 25, status: 'eliminated' },
-      { name: 'Player E', team: 'Kentucky', seed: 2, points: 32, status: 'active' },
-      { name: 'Player F', team: 'Texas Tech', seed: 3, points: 20, status: 'eliminated' },
-      { name: 'Player G', team: 'Gonzaga', seed: 1, points: 22, status: 'active' },
-      { name: 'Player H', team: 'Purdue', seed: 3, points: 16, status: 'eliminated' },
-      { name: 'Player I', team: 'Houston', seed: 3, points: 18, status: 'eliminated' },
-      { name: 'Player J', team: 'Marquette', seed: 6, points: 12, status: 'eliminated' },
-    ],
-  },
-  {
-    id: 4,
-    teamName: 'Sweet Sixteen',
-    owner: 'Jessica H',
-    totalPoints: 198,
-    playerCount: 10,
-    activePlayerCount: 4,
-    pointsPerGame: 18.9,
-    trend: -3,
-    lastUpdated: '30 minutes ago',
-    seedDistribution: { '1-6': 7, '7-10': 2, '11-16': 1 },
-    players: [
-      { name: 'Player X', team: 'Duke', seed: 1, points: 35, status: 'active' },
-      { name: 'Player Y', team: 'Kansas', seed: 1, points: 30, status: 'active' },
-      { name: 'Player Z', team: 'UNC', seed: 2, points: 25, status: 'active' },
-      { name: 'Player W', team: 'Arizona', seed: 2, points: 22, status: 'eliminated' },
-      { name: 'Player V', team: 'Kentucky', seed: 2, points: 28, status: 'active' },
-      { name: 'Player U', team: 'Texas Tech', seed: 3, points: 18, status: 'eliminated' },
-      { name: 'Player T', team: 'Gonzaga', seed: 1, points: 20, status: 'eliminated' },
-      { name: 'Player S', team: 'Purdue', seed: 3, points: 15, status: 'eliminated' },
-      { name: 'Player R', team: 'Houston', seed: 3, points: 16, status: 'eliminated' },
-      { name: 'Player Q', team: 'Marquette', seed: 6, points: 10, status: 'eliminated' },
-    ],
-  },
-];
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function AllTeamsPage() {
   const [expandedTeam, setExpandedTeam] = useState(null);
   const [sortBy, setSortBy] = useState('points');
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const sortedTeams = [...mockAllTeams].sort((a, b) => {
+  useEffect(() => {
+    const selectedLeagueId = localStorage.getItem('selectedLeagueId');
+    if (selectedLeagueId) {
+      fetch(`${API_URL}/api/leagues/${selectedLeagueId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.teams) {
+            const mapped = data.teams.map(t => {
+              const players = (t.players || []).map(p => ({
+                name: p.name,
+                team: p.ncaaTeam,
+                seed: p.seed,
+                points: p.totalPoints || 0,
+                status: p.isEliminated ? 'eliminated' : 'active'
+              }));
+              const playerCount = players.length;
+              const activePlayerCount = players.filter(p => p.status === 'active').length;
+              const seedDistribution = { '1-6': 0, '7-10': 0, '11-16': 0 };
+              players.forEach(p => {
+                if (p.seed >= 1 && p.seed <= 6) seedDistribution['1-6']++;
+                else if (p.seed >= 7 && p.seed <= 10) seedDistribution['7-10']++;
+                else seedDistribution['11-16']++;
+              });
+
+              return {
+                id: t.id,
+                teamName: t.name,
+                owner: t.owner,
+                totalPoints: t.totalPoints || 0,
+                playerCount,
+                activePlayerCount,
+                pointsPerGame: playerCount ? (t.totalPoints || 0) / playerCount : 0,
+                trend: 0,
+                lastUpdated: 'now',
+                seedDistribution,
+                players
+              };
+            });
+            setTeams(mapped);
+          }
+        })
+        .catch(err => console.error('Error loading league teams', err))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const sortedTeams = [...teams].sort((a, b) => {
     if (sortBy === 'points') return b.totalPoints - a.totalPoints;
     if (sortBy === 'name') return a.teamName.localeCompare(b.teamName);
     if (sortBy === 'active') return b.activePlayerCount - a.activePlayerCount;

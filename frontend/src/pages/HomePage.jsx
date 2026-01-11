@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PlayerCard from '../components/PlayerCard';
 import LeagueStandingsTable from '../components/LeagueStandingsTable';
 import StatBox from '../components/StatBox';
+import { getLeagueStandingsFromRankings, getTournamentGamesForDate } from '../services/dataTransform';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// Initial mock team - will be replaced with real data
 const mockMyTeam = {
   teamName: 'Bracket Busters',
   owner: 'Cole D',
@@ -189,9 +193,135 @@ const mockLeagueTeams = [
 
 export default function HomePage() {
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [leagueTeams, setLeagueTeams] = useState(mockLeagueTeams);
+  const [myTeam, setMyTeam] = useState(mockMyTeam);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const activePlayers = mockMyTeam.players.filter(p => !p.isEliminated).length;
-  const averagePointsPerPlayer = mockMyTeam.totalPoints / mockMyTeam.players.length;
+  // Fetch real tournament data on component mount
+  useEffect(() => {
+    async function fetchTournamentData() {
+      try {
+        setLoading(true);
+        // If a league is selected, load that league from backend
+        const selectedLeagueId = localStorage.getItem('selectedLeagueId');
+        if (selectedLeagueId) {
+          try {
+            const resp = await fetch(`${API_URL}/api/leagues/${selectedLeagueId}`);
+            if (resp.ok) {
+              const leagueData = await resp.json();
+              // map backend teams to UI shape
+              const mapped = leagueData.teams.map(t => {
+                const playerCount = (t.players && t.players.length) || 0;
+                const activePlayerCount = (t.players && t.players.filter(p => !p.isEliminated).length) || 0;
+                const points = t.totalPoints || 0;
+                return {
+                  id: t.id,
+                  teamName: t.name,
+                  owner: t.owner,
+                  totalPoints: points,
+                  playerCount,
+                  activePlayerCount,
+                  pointsPerGame: playerCount ? points / playerCount : 0,
+                  trend: 0
+                };
+              });
+              setLeagueTeams(mapped);
+              // set myTeam to first team in league if present
+              if (leagueData.teams && leagueData.teams.length > 0) {
+                const t = leagueData.teams[0];
+                const myTeamObj = {
+                  teamName: t.name,
+                  owner: t.owner,
+                  totalPoints: t.totalPoints || 0,
+                  players: (t.players || []).map((p, idx) => ({
+                    id: p.id || idx,
+                    name: p.name,
+                    ncaaTeam: p.ncaaTeam,
+                    seed: p.seed,
+                    totalPoints: p.totalPoints || 0,
+                    gamesPlayed: p.gamesPlayed || 0,
+                    isEliminated: !!p.isEliminated,
+                    recentGames: []
+                  }))
+                };
+                setMyTeam(myTeamObj);
+              }
+            } else {
+              console.warn('Failed to load selected league from backend, falling back to live NCAA data');
+            }
+          } catch (e) {
+            console.warn('Error fetching league from backend', e);
+          }
+        }
+
+        // Fetch standings/rankings from NCAA API as supplemental data
+        const standings = await getLeagueStandingsFromRankings();
+        if (standings && standings.length > 0) {
+          // Use top 25 teams as league standings only if no backend league was selected
+          if (!localStorage.getItem('selectedLeagueId')) {
+            setLeagueTeams(standings.slice(0, 25));
+          }
+          console.log('✅ Loaded real NCAA tournament standings from NCAA API', standings);
+        } else {
+          if (!localStorage.getItem('selectedLeagueId')) setLeagueTeams(mockLeagueTeams);
+          console.warn('⚠️ Using mock data - NCAA API may be unavailable');
+        }
+
+        // Fetch tournament games for current date to get real player data
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        
+        const games = await getTournamentGamesForDate(year, month, day);
+        if (games && games.length > 0) {
+          console.log('✅ Loaded real tournament games for date:', `${year}/${month}/${day}`, games);
+          // Create player data from games
+          const players = games.slice(0, 10).map((game, idx) => ({
+            id: idx + 1,
+            name: `${game.awayTeam} vs ${game.homeTeam}`,
+            ncaaTeam: game.awayTeam,
+            seed: parseInt(game.awaySeed) || 0,
+            totalPoints: game.awayScore,
+            gamesPlayed: 1,
+            isEliminated: game.awayScore < game.homeScore,
+            recentGames: [
+              { points: game.awayScore, opponent: game.homeTeam }
+            ],
+          }));
+          
+          if (players.length > 0) {
+            const totalPoints = players.reduce((sum, p) => sum + p.totalPoints, 0);
+            const updatedTeam = {
+              ...mockMyTeam,
+              players: players,
+              totalPoints: totalPoints
+            };
+            setMyTeam(updatedTeam);
+            console.log('✅ Updated team with real game data');
+          }
+        } else {
+          console.warn('⚠️ No games found for today, using mock player data');
+          setMyTeam(mockMyTeam);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error('❌ Error fetching tournament data:', err);
+        setError(err.message);
+        setLeagueTeams(mockLeagueTeams);
+        setMyTeam(mockMyTeam);
+        setLoading(false);
+      }
+    }
+
+    fetchTournamentData();
+  }, []);
+
+  // Calculate active players and average points
+  const activePlayers = myTeam.players.filter(p => !p.isEliminated).length;
+  const averagePointsPerPlayer = myTeam.totalPoints / myTeam.players.length;
 
   return (
     <div className="min-h-screen bg-mm-dark py-8">
@@ -204,7 +334,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <StatBox
             label="Your Points"
-            value={mockMyTeam.totalPoints}
+            value={myTeam.totalPoints}
             icon="🏀"
             trend={5}
             trendLabel="Last 3 games"
@@ -213,7 +343,7 @@ export default function HomePage() {
             label="Active Players"
             value={activePlayers}
             icon="👥"
-            trendLabel={`${mockMyTeam.players.length - activePlayers} eliminated`}
+            trendLabel={`${myTeam.players.length - activePlayers} eliminated`}
           />
           <StatBox
             label="Avg Per Player"
@@ -234,9 +364,9 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <div className="lg:col-span-2">
             <div className="mb-6">
-              <h2 className="mm-heading-2 mb-4">Your Roster - {mockMyTeam.teamName}</h2>
+              <h2 className="mm-heading-2 mb-4">Your Roster - {myTeam.teamName}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {mockMyTeam.players.map(player => (
+                {myTeam.players.map(player => (
                   <PlayerCard
                     key={player.id}
                     player={player}
@@ -253,11 +383,11 @@ export default function HomePage() {
               <div className="space-y-4">
                 <div className="pb-4 border-b border-mm-border">
                   <p className="text-xs text-mm-text font-semibold mb-1">TOTAL POINTS</p>
-                  <p className="text-3xl font-bold text-mm-sky">{mockMyTeam.totalPoints}</p>
+                  <p className="text-3xl font-bold text-mm-sky">{myTeam.totalPoints}</p>
                 </div>
                 <div className="pb-4 border-b border-mm-border">
                   <p className="text-xs text-mm-text font-semibold mb-1">ACTIVE PLAYERS</p>
-                  <p className="text-2xl font-bold text-mm-success">{activePlayers}/10</p>
+                  <p className="text-2xl font-bold text-mm-success">{activePlayers}/{myTeam.players.length}</p>
                 </div>
                 <div>
                   <p className="text-xs text-mm-text font-semibold mb-1">SEED DISTRIBUTION</p>
@@ -287,12 +417,12 @@ export default function HomePage() {
                   <p className="text-lg font-bold text-white">2026 Elite Eight</p>
                 </div>
                 <div>
-                  <p className="text-xs text-mm-text font-semibold">MEMBERS</p>
-                  <p className="text-lg font-bold text-white">4 Teams</p>
+                  <p className="text-xs text-gray-500 font-semibold">MEMBERS</p>
+                  <p className="text-lg font-bold text-mm-navy">{leagueTeams.length} Teams</p>
                 </div>
                 <div>
-                  <p className="text-xs text-mm-text font-semibold">YOUR RANK</p>
-                  <p className="text-2xl font-bold text-mm-gold">1st Place 🥇</p>
+                  <p className="text-xs text-gray-500 font-semibold">DATA SOURCE</p>
+                  <p className="text-sm font-bold text-mm-navy">🔗 NCAA API (Live)</p>
                 </div>
               </div>
             </div>
@@ -300,7 +430,7 @@ export default function HomePage() {
         </div>
 
         <LeagueStandingsTable
-          teams={mockLeagueTeams}
+          teams={leagueTeams}
           onTeamClick={setSelectedTeam}
         />
       </div>

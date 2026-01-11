@@ -24,6 +24,18 @@ export default function Navbar() {
               My League
             </Link>
             <Link
+              to="/setup"
+              className="text-white hover:text-mm-gold transition-colors font-semibold"
+            >
+              Setup
+            </Link>
+            <Link
+              to="/draft"
+              className="text-white hover:text-mm-gold transition-colors font-semibold"
+            >
+              Draft
+            </Link>
+            <Link
               to="/standings"
               className="text-white hover:text-mm-gold transition-colors font-semibold"
             >
