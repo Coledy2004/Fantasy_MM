@@ -58,23 +58,26 @@ export default function DraftPage() {
   }
 
   async function generatePool() {
-    // Create a simple mock pool to draft from
-    const sample = Array.from({ length: 20 }).map((_, idx) => ({
-      name: `Player ${idx + 1}`,
-      ncaaTeam: `Team ${Math.floor(idx/2)+1}`,
-      seed: (idx % 16) + 1
-    }));
-
     try {
-      const resp = await fetch(`${API_URL}/api/players/pool`, {
+      const resp = await fetch(`${API_URL}/api/players/generate-from-espn`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerList: sample })
+        headers: { 'Content-Type': 'application/json' }
       });
-      await resp.json();
+      
+      if (!resp.ok) {
+        const error = await resp.json();
+        console.error('Error from backend:', error);
+        throw new Error(error.error || 'Failed to generate pool');
+      }
+      
+      const data = await resp.json();
+      console.log('Generated pool with', data.created, 'players');
+      
+      // Refresh the available players list
       await fetchAvailablePlayers();
     } catch (e) {
-      console.error('Error generating pool', e);
+      console.error('Error generating pool:', e);
+      alert('Failed to generate player pool: ' + e.message);
     }
   }
 

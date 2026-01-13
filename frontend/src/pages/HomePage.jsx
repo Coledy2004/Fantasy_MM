@@ -193,10 +193,11 @@ const mockLeagueTeams = [
 
 export default function HomePage() {
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const [leagueTeams, setLeagueTeams] = useState(mockLeagueTeams);
-  const [myTeam, setMyTeam] = useState(mockMyTeam);
+  const [leagueTeams, setLeagueTeams] = useState([]);
+  const [myTeam, setMyTeam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasLeague, setHasLeague] = useState(false);
 
   // Fetch real tournament data on component mount
   useEffect(() => {
@@ -206,6 +207,7 @@ export default function HomePage() {
         // If a league is selected, load that league from backend
         const selectedLeagueId = localStorage.getItem('selectedLeagueId');
         if (selectedLeagueId) {
+          setHasLeague(true);
           try {
             const resp = await fetch(`${API_URL}/api/leagues/${selectedLeagueId}`);
             if (resp.ok) {
@@ -247,71 +249,23 @@ export default function HomePage() {
                 };
                 setMyTeam(myTeamObj);
               }
+              console.log('✅ Loaded league from backend');
             } else {
-              console.warn('Failed to load selected league from backend, falling back to live NCAA data');
+              console.warn('Failed to load selected league from backend');
             }
           } catch (e) {
             console.warn('Error fetching league from backend', e);
           }
-        }
-
-        // Fetch standings/rankings from NCAA API as supplemental data
-        const standings = await getLeagueStandingsFromRankings();
-        if (standings && standings.length > 0) {
-          // Use top 25 teams as league standings only if no backend league was selected
-          if (!localStorage.getItem('selectedLeagueId')) {
-            setLeagueTeams(standings.slice(0, 25));
-          }
-          console.log('✅ Loaded real NCAA tournament standings from NCAA API', standings);
         } else {
-          if (!localStorage.getItem('selectedLeagueId')) setLeagueTeams(mockLeagueTeams);
-          console.warn('⚠️ Using mock data - NCAA API may be unavailable');
-        }
-
-        // Fetch tournament games for current date to get real player data
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        
-        const games = await getTournamentGamesForDate(year, month, day);
-        if (games && games.length > 0) {
-          console.log('✅ Loaded real tournament games for date:', `${year}/${month}/${day}`, games);
-          // Create player data from games
-          const players = games.slice(0, 10).map((game, idx) => ({
-            id: idx + 1,
-            name: `${game.awayTeam} vs ${game.homeTeam}`,
-            ncaaTeam: game.awayTeam,
-            seed: parseInt(game.awaySeed) || 0,
-            totalPoints: game.awayScore,
-            gamesPlayed: 1,
-            isEliminated: game.awayScore < game.homeScore,
-            recentGames: [
-              { points: game.awayScore, opponent: game.homeTeam }
-            ],
-          }));
-          
-          if (players.length > 0) {
-            const totalPoints = players.reduce((sum, p) => sum + p.totalPoints, 0);
-            const updatedTeam = {
-              ...mockMyTeam,
-              players: players,
-              totalPoints: totalPoints
-            };
-            setMyTeam(updatedTeam);
-            console.log('✅ Updated team with real game data');
-          }
-        } else {
-          console.warn('⚠️ No games found for today, using mock player data');
-          setMyTeam(mockMyTeam);
+          console.log('ℹ️ No league selected - showing empty state');
+          setHasLeague(false);
         }
 
         setLoading(false);
       } catch (err) {
         console.error('❌ Error fetching tournament data:', err);
         setError(err.message);
-        setLeagueTeams(mockLeagueTeams);
-        setMyTeam(mockMyTeam);
+        setHasLeague(false);
         setLoading(false);
       }
     }
@@ -319,9 +273,42 @@ export default function HomePage() {
     fetchTournamentData();
   }, []);
 
-  // Calculate active players and average points
-  const activePlayers = myTeam.players.filter(p => !p.isEliminated).length;
-  const averagePointsPerPlayer = myTeam.totalPoints / myTeam.players.length;
+  // Calculate active players and average points (only if myTeam exists)
+  const activePlayers = myTeam ? myTeam.players.filter(p => !p.isEliminated).length : 0;
+  const averagePointsPerPlayer = myTeam ? myTeam.totalPoints / myTeam.players.length : 0;
+
+  // Show empty state if no league is selected
+  if (!hasLeague) {
+    return (
+      <div className="min-h-screen bg-mm-dark py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12">
+            <h1 className="mm-heading-1 mb-2">Welcome to Fantasy March Madness</h1>
+            <p className="text-mm-text text-lg">Get started by creating a league</p>
+          </div>
+
+          <div className="mm-card p-12 text-center">
+            <div className="text-6xl mb-4">🏀</div>
+            <h2 className="mm-heading-2 mb-4">No League Selected</h2>
+            <p className="text-mm-text mb-6 text-lg">You haven't selected a league yet. Head to the Setup page to create or select a league.</p>
+            <a href="/setup" className="inline-block px-6 py-3 bg-mm-sky hover:bg-mm-sky/80 text-mm-dark rounded font-semibold">
+              Go to Setup →
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!myTeam) {
+    return (
+      <div className="min-h-screen bg-mm-dark py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <p className="text-mm-text">Loading your league...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-mm-dark py-8">
